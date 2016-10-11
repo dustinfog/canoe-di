@@ -51,7 +51,7 @@ class PropertyParser
             )) {
                 $property = new Property();
                 $property->access = $matches[1];
-                $property->type = self::tryIntegriteClassName($className, $matches[2]);
+                $property->type = self::tryIntegrateClassName($className, $matches[2]);
                 $property->name = $matches[3];
                 $properties[$property->name] = $property;
             }
@@ -62,7 +62,7 @@ class PropertyParser
         return $properties;
     }
 
-    private static function tryIntegriteClassName($ownerClassName, $type)
+    private static function tryIntegrateClassName($ownerClassName, $type)
     {
         if (class_exists($type)) {
             return $type;
