@@ -1,0 +1,28 @@
+{
+    "name": "MyDI",
+    "description": "A Simple Ioc Framework",
+    "type": "library",
+    "homepage": "https://github.com/dustinfog/MyDI",
+    "time": "2016-09-10",
+    "license": "proprietary",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Zhandong Pan",
+            "email": "xodger@163.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "xodger@163.com",
+        "qq": "15102144"
+    },
+    "autoload": {
+        "psr-4": {
+            "MyDI\\": "src/MyDI"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.5.*"
+    }
+}
