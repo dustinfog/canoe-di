@@ -19,12 +19,14 @@ class Container
 
     /**
      * @param mixed       $spec
-     * @param string      $type
+     * @param int         $type
      * @param string|null $id
      */
     public static function register($spec, $type, $id = null)
     {
-        if (is_scalar($spec) || $type == RegisterType::TYPE_CALLBACK || empty($id)) {
+        if (($type == RegisterType::TYPE_VALUE && (is_scalar($spec))
+                || $type == RegisterType::TYPE_CALLBACK)
+            && empty($id)) {
             throw new \InvalidArgumentException("can not register a scalar or a callback value without specifying id");
         }
 
@@ -86,13 +88,13 @@ class Container
     {
         if ($entry->getType() == RegisterType::TYPE_CLASS) {
             $class = $entry->getSpec();
-
-            while ($class != null) {
-                if (!isset(self::$entries[$class])) {
-                    self::$entries[$class] = $entry;
+            $parentClass = $class;
+            while ($parentClass != null) {
+                if (!isset(self::$entries[$parentClass])) {
+                    self::$entries[$parentClass] = $entry;
                 }
 
-                $class = get_parent_class($class);
+                $parentClass = get_parent_class($parentClass);
             }
 
             foreach (class_implements($class) as $interface) {
@@ -140,6 +142,11 @@ class Container
     {
         $class = new \ReflectionClass($className);
         $constructor = $class->getConstructor();
+
+        if ($constructor == null) {
+            return $class->newInstance();
+        }
+
         $formalParameters = $constructor->getParameters();
         $actualParameters = [];
 
@@ -147,7 +154,7 @@ class Container
             $parameterName = $parameter->getName();
             $actualParameter = self::get($parameterName);
             if ($actualParameter == null && !empty($parameterClass = $parameter->getClass())) {
-                $actualParameter = self::get($parameterClass);
+                $actualParameter = self::get($parameterClass->getName());
             }
 
             if (empty($actualParameter)) {

@@ -8,7 +8,11 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-class ClassB
+interface InterfaceB{
+
+}
+
+class ClassB implements InterfaceB
 {
     public function __toString()
     {
@@ -29,19 +33,32 @@ class ClassC
  */
 class ClassA
 {
+    use \MyDI\DITrait;
     /**
      * @var ClassB
      */
     public $b;
-    public function __construct(ClassB $b)
+    public $uid;
+
+    /**
+     * ClassA constructor.
+     * @param InterfaceB $b
+     * @param int        $uid
+     */
+    public function __construct(InterfaceB $b, $uid)
     {
         $this->b = $b;
+        $this->uid = $uid;
     }
 
-    use \MyDI\DITrait;
 }
+
+\MyDI\Container::register(ClassB::class, \MyDI\RegisterType::TYPE_CLASS);
+\MyDI\Container::register(5, \MyDI\RegisterType::TYPE_VALUE, 'uid');
 
 /** @var ClassA $a */
 $a = \MyDI\Container::get(ClassA::class);
 
-echo $a->b;
+echo $a->b . PHP_EOL;
+echo $a->c . PHP_EOL;
+echo $a->uid . PHP_EOL;
