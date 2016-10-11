@@ -1,4 +1,5 @@
 vendor/
 .idea/*
-bin/
+bin/*
+tests/*
 composer.lock
