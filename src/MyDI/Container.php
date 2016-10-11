@@ -18,6 +18,40 @@ class Container
     private static $beans = array();
 
     /**
+     * $config is a array with schema like follow:
+     *
+     * [
+     *  'definitions' => [
+     *      'id1' => function() {},
+     *      'id2' => 'ClassName1',
+     *      'ClassName2'
+     *  ],
+     *  'beans' => [
+     *      'id3' => $value
+     *  ]
+     * ]
+     *
+     * @param array $config
+     */
+    public static function loadConfig(array $config)
+    {
+        if (isset($config['beans'])) {
+            foreach ($config['beans'] as $key => $value) {
+                if (!is_numeric($key)) {
+                    self::set($key, $value);
+                } else {
+                    throw new \UnexpectedValueException('invalid key for bean');
+                }
+            }
+        }
+
+        if (isset($config['definitions'])) {
+            foreach ($config['definitions'] as $key => $definition) {
+                self::registerDefinition($definition, is_numeric($key) ? null : $key);
+            }
+        }
+    }
+    /**
      * @param string|callable $definition
      * @param string|null     $id
      */
