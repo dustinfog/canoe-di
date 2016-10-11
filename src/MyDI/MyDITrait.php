@@ -12,7 +12,7 @@ namespace MyDI;
  * Class IocSupporter
  * @package MyDI
  */
-trait DITrait
+trait MyDITrait
 {
     /**
      * @param string $name

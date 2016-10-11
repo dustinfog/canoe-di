@@ -14,48 +14,25 @@ namespace MyDI;
  */
 class Container
 {
-    private static $entries = array();
+    private static $definitions = array();
     private static $beans = array();
 
     /**
-     * @param callable $callback
-     * @param string   $id
+     * @param string|callable $definition
+     * @param string|null     $id
      */
-    public static function registerCallback(callable $callback, $id)
+    public static function registerDefinition($definition, $id = null)
     {
-        if (empty($id) || !is_string($id)) {
-            throw new \InvalidArgumentException("invalid id");
+        if (empty($definition)) {
+            throw new \InvalidArgumentException('definition cannot be empty');
         }
 
-        $entry = new RegisterEntry(RegisterEntry::TYPE_CALLBACK, $$callback);
-        self::$entries[$id] = $entry;
-    }
-
-    /**
-     * @param string      $class
-     * @param string|null $id
-     */
-    public static function registerClass($class, $id = null)
-    {
-        if (empty($class) || !is_string($class) || !class_exists($class)) {
-            throw new \InvalidArgumentException("invalid class");
-        }
-
-        if (!empty($id)) {
-            if (!is_string($id)) {
-                throw new \InvalidArgumentException("invalid id");
-            }
-
-            if (class_exists($id) && ( $id != $class || !is_subclass_of($class, $id))) {
-                throw new \InvalidArgumentException("$class is not a subclass of $id");
-            }
-        }
-
-        $entry = new RegisterEntry(RegisterEntry::TYPE_CLASS, $class);
-        self::autoRegisterClassEntry($entry);
-
-        if (!empty($id)) {
-            self::$entries[$id] = $entry;
+        if (is_callable($definition)) {
+            self::registerCallback($definition, $id);
+        } elseif (is_string($definition) && class_exists($definition)) {
+            self::registerClass($definition, $id);
+        } else {
+            throw new \InvalidArgumentException('definition cannot be empty');
         }
     }
 
@@ -90,8 +67,8 @@ class Container
             return self::$beans[$id];
         } else {
             $bean = null;
-            if (isset(self::$entries[$id])) {
-                $bean = self::createFromEntry(self::$entries[$id]);
+            if (isset(self::$definitions[$id])) {
+                $bean = self::createFromDefinition(self::$definitions[$id]);
                 self::set($id, $bean);
             } elseif (class_exists($id)) {
                 $bean = self::createFromClass($id);
@@ -102,23 +79,20 @@ class Container
         }
     }
 
-    private static function autoRegisterClassEntry(RegisterEntry $entry)
+    private static function autoRegisterClass($class)
     {
-        if ($entry->getType() == RegisterEntry::TYPE_CLASS) {
-            $class = $entry->getSpec();
-            $parentClass = $class;
-            while ($parentClass != null) {
-                if (!isset(self::$entries[$parentClass])) {
-                    self::$entries[$parentClass] = $entry;
-                }
-
-                $parentClass = get_parent_class($parentClass);
+        $parentClass = $class;
+        while ($parentClass != null) {
+            if (!isset(self::$definitions[$parentClass])) {
+                self::$definitions[$parentClass] = $class;
             }
 
-            foreach (class_implements($class) as $interface) {
-                if (!isset(self::$entries[$interface])) {
-                    self::$entries[$interface] = $entry;
-                }
+            $parentClass = get_parent_class($parentClass);
+        }
+
+        foreach (class_implements($class) as $interface) {
+            if (!isset(self::$definitions[$interface])) {
+                self::$definitions[$interface] = $class;
             }
         }
     }
@@ -146,15 +120,13 @@ class Container
         }
     }
 
-    private static function createFromEntry(RegisterEntry $entry)
+    private static function createFromDefinition($definition)
     {
-        if ($entry->getType() == RegisterEntry::TYPE_CALLBACK) {
-            $callback = $entry->getSpec();
-
-            return $callback($entry);
+        if (is_callable($definition)) {
+            return $definition();
         }
 
-        return self::createFromClass($entry->getSpec());
+        return self::createFromClass($definition);
     }
 
     private static function createFromClass($className)
@@ -184,5 +156,42 @@ class Container
         }
 
         return $class->newInstanceArgs($actualParameters);
+    }
+
+
+    /**
+     * @param callable $callback
+     * @param string $id
+     */
+    private static function registerCallback(callable $callback, $id)
+    {
+        if (empty($id) || !is_string($id)) {
+            throw new \InvalidArgumentException("invalid id");
+        }
+
+        self::$definitions[$id] = $callback;
+    }
+
+    /**
+     * @param string $class
+     * @param string|null $id
+     */
+    private static function registerClass($class, $id = null)
+    {
+        if (!empty($id)) {
+            if (!is_string($id)) {
+                throw new \InvalidArgumentException("invalid id");
+            }
+
+            if (class_exists($id) && ($id != $class || !is_subclass_of($class, $id))) {
+                throw new \InvalidArgumentException("$class is not a subclass of $id");
+            }
+        }
+
+        self::autoRegisterClass($class);
+
+        if (!empty($id)) {
+            self::$definitions[$id] = $class;
+        }
     }
 }
