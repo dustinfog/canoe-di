@@ -28,7 +28,7 @@ class Container
         }
 
         if (is_callable($definition)) {
-            self::registerCallback($definition, $id);
+            self::registerCallable($definition, $id);
         } elseif (is_string($definition) && class_exists($definition)) {
             self::registerClass($definition, $id);
         } else {
@@ -163,7 +163,7 @@ class Container
      * @param callable $callback
      * @param string $id
      */
-    private static function registerCallback(callable $callback, $id)
+    private static function registerCallable(callable $callback, $id)
     {
         if (empty($id) || !is_string($id)) {
             throw new \InvalidArgumentException("invalid id");
@@ -183,7 +183,7 @@ class Container
                 throw new \InvalidArgumentException("invalid id");
             }
 
-            if (class_exists($id) && ($id != $class || !is_subclass_of($class, $id))) {
+            if (class_exists($id) && $id != $class && !is_subclass_of($class, $id)) {
                 throw new \InvalidArgumentException("$class is not a subclass of $id");
             }
         }
