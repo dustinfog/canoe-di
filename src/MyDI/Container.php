@@ -18,40 +18,66 @@ class Container
     private static $beans = array();
 
     /**
-     * @param mixed       $spec
-     * @param int         $type
+     * @param callable $callback
+     * @param string   $id
+     */
+    public static function registerCallback(callable $callback, $id)
+    {
+        if (empty($id) || !is_string($id)) {
+            throw new \InvalidArgumentException("invalid id");
+        }
+
+        $entry = new RegisterEntry(RegisterEntry::TYPE_CALLBACK, $$callback);
+        self::$entries[$id] = $entry;
+    }
+
+    /**
+     * @param string      $class
      * @param string|null $id
      */
-    public static function register($spec, $type, $id = null)
+    public static function registerClass($class, $id = null)
     {
-        if (($type == RegisterType::TYPE_VALUE && (is_scalar($spec))
-                || $type == RegisterType::TYPE_CALLBACK)
-            && empty($id)) {
-            throw new \InvalidArgumentException("can not register a scalar or a callback value without specifying id");
+        if (empty($class) || !is_string($class) || !class_exists($class)) {
+            throw new \InvalidArgumentException("invalid class");
         }
 
         if (!empty($id)) {
             if (!is_string($id)) {
-                throw new \InvalidArgumentException("id must be a string");
+                throw new \InvalidArgumentException("invalid id");
             }
 
-            if (class_exists($id)
-                && $type == RegisterType::TYPE_CLASS
-                && ( $id != $spec || !is_subclass_of($spec, $id))) {
-                throw new \InvalidArgumentException("$spec is not a subclass of $id");
+            if (class_exists($id) && ( $id != $class || !is_subclass_of($class, $id))) {
+                throw new \InvalidArgumentException("$class is not a subclass of $id");
             }
         }
 
-        if ($type == RegisterType::TYPE_VALUE) {
-            self::$beans[$id] = $spec;
-
-            self::autoRegisterBean($spec);
-
-            return;
-        }
-
-        $entry = new RegisterEntry($type, $spec);
+        $entry = new RegisterEntry(RegisterEntry::TYPE_CLASS, $class);
         self::autoRegisterClassEntry($entry);
+
+        if (!empty($id)) {
+            self::$entries[$id] = $entry;
+        }
+    }
+
+    /**
+     * @param string $id
+     * @param mixed  $value
+     */
+    public static function set($id, $value)
+    {
+        if (empty($id) || !is_string($id)) {
+            throw new \InvalidArgumentException('invalid id');
+        }
+
+        if (class_exists($id) && !($value instanceof $id)) {
+            throw new \InvalidArgumentException('bean is not a instance of $id');
+        }
+
+        if (is_object($value)) {
+            self::autoRegisterBean($value);
+        }
+
+        self::$beans[$id] = $value;
     }
 
     /**
@@ -66,18 +92,10 @@ class Container
             $bean = null;
             if (isset(self::$entries[$id])) {
                 $bean = self::createFromEntry(self::$entries[$id]);
-
-                if (class_exists($id) && !($bean instanceof $id)) {
-                    throw new \RuntimeException('bean is not a instance of $id');
-                }
-
-
-                self::$beans[$id] = $bean;
-            }
-
-            if (class_exists($id)) {
+                self::set($id, $bean);
+            } elseif (class_exists($id)) {
                 $bean = self::createFromClass($id);
-                self::$beans[$id] = $bean;
+                self::set($id, $bean);
             }
 
             return $bean;
@@ -86,7 +104,7 @@ class Container
 
     private static function autoRegisterClassEntry(RegisterEntry $entry)
     {
-        if ($entry->getType() == RegisterType::TYPE_CLASS) {
+        if ($entry->getType() == RegisterEntry::TYPE_CLASS) {
             $class = $entry->getSpec();
             $parentClass = $class;
             while ($parentClass != null) {
@@ -112,16 +130,17 @@ class Container
         }
 
         $class = get_class($bean);
-        while ($class != null) {
-            if (!isset(self::$entries[$class])) {
-                self::$beans[$class] = $bean;
+        $parentClass = $class;
+        while ($parentClass != null) {
+            if (!isset(self::$beans[$parentClass])) {
+                self::$beans[$parentClass] = $bean;
             }
 
-            $class = get_parent_class($class);
+            $parentClass = get_parent_class($parentClass);
         }
 
         foreach (class_implements($class) as $interface) {
-            if (!isset(self::$entries[$interface])) {
+            if (!isset(self::$beans[$interface])) {
                 self::$beans[$interface] = $bean;
             }
         }
@@ -129,7 +148,7 @@ class Container
 
     private static function createFromEntry(RegisterEntry $entry)
     {
-        if ($entry->getType() == RegisterType::TYPE_CALLBACK) {
+        if ($entry->getType() == RegisterEntry::TYPE_CALLBACK) {
             $callback = $entry->getSpec();
 
             return $callback($entry);

@@ -53,8 +53,8 @@ class ClassA
 
 }
 
-\MyDI\Container::register(ClassB::class, \MyDI\RegisterType::TYPE_CLASS);
-\MyDI\Container::register(5, \MyDI\RegisterType::TYPE_VALUE, 'uid');
+\MyDI\Container::registerClass(ClassB::class);
+\MyDI\Container::set('uid', 5);
 
 /** @var ClassA $a */
 $a = \MyDI\Container::get(ClassA::class);
