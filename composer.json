@@ -6,6 +6,9 @@
     "time": "2016-09-10",
     "license": "proprietary",
     "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.5.25"
+    },
     "authors": [
         {
             "name": "Zhandong Pan",
