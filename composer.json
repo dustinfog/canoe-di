@@ -1,5 +1,5 @@
 {
-    "name": "dustinfog/mydi",
+    "name": "dustinfog/canoe-di",
     "description": "A Simple Ioc Framework",
     "type": "library",
     "homepage": "https://github.com/dustinfog/canoe-di",
