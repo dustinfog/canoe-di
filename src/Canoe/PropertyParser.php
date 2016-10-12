@@ -6,11 +6,11 @@
  * Time: 6:47 PM
  */
 
-namespace MyDI;
+namespace Canoe;
 
 /**
  * Class PropertyParser
- * @package MyDI
+ * @package Canoe
  */
 class PropertyParser
 {

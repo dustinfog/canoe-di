@@ -6,13 +6,13 @@
  * Time: 11:51 AM
  */
 
-namespace MyDI;
+namespace Canoe;
 
 /**
  * Class Container
- * @package MyDI
+ * @package Canoe
  */
-class Container
+class CanoeDI
 {
     private static $definitions = array();
     private static $beans = array();

@@ -6,11 +6,11 @@
  * Date: 9/10/16
  * Time: 6:46 PM
  */
-namespace MyDI;
+namespace Canoe;
 
 /**
  * Class Property
- * @package MyDI
+ * @package Canoe
  */
 class Property
 {

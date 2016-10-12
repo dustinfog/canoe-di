@@ -6,13 +6,13 @@
  * Time: 6:51 PM
  */
 
-namespace MyDI;
+namespace Canoe;
 
 /**
  * Class IocSupporter
- * @package MyDI
+ * @package Canoe
  */
-trait MyDITrait
+trait CanoeDITrait
 {
     /**
      * @param string $name
@@ -25,10 +25,10 @@ trait MyDITrait
             return null;
         }
 
-        $instance = Container::get($name);
+        $instance = CanoeDI::get($name);
         $type = $properties[$name]->type;
         if (!($instance instanceof $type)) {
-            $instance = Container::get($type);
+            $instance = CanoeDI::get($type);
         }
 
         return $instance;

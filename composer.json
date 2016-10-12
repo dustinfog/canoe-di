@@ -2,7 +2,7 @@
     "name": "dustinfog/mydi",
     "description": "A Simple Ioc Framework",
     "type": "library",
-    "homepage": "https://github.com/dustinfog/MyDI",
+    "homepage": "https://github.com/dustinfog/canoe-di",
     "time": "2016-09-10",
     "license": "proprietary",
     "minimum-stability": "dev",
@@ -22,7 +22,7 @@
     },
     "autoload": {
         "psr-4": {
-            "MyDI\\": "src/MyDI"
+            "Canoe\\": "src/Canoe"
         }
     },
     "require-dev": {
