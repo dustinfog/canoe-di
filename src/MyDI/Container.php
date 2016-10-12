@@ -113,6 +113,43 @@ class Container
         }
     }
 
+    /**
+     * @param callable $callback
+     * @param string $id
+     */
+    private static function registerCallable(callable $callback, $id)
+    {
+        if (empty($id) || !is_string($id)) {
+            throw new \InvalidArgumentException("invalid id");
+        }
+
+        self::$definitions[$id] = $callback;
+    }
+
+    /**
+     * @param string $class
+     * @param string|null $id
+     */
+    private static function registerClass($class, $id = null)
+    {
+        if (!empty($id)) {
+            if (!is_string($id)) {
+                throw new \InvalidArgumentException("invalid id");
+            }
+
+            if (class_exists($id) && $id != $class && !is_subclass_of($class, $id)) {
+                throw new \InvalidArgumentException("$class is not a subclass of $id");
+            }
+        }
+
+        self::autoRegisterClass($class);
+
+        if (!empty($id)) {
+            self::$definitions[$id] = $class;
+        }
+    }
+
+
     private static function autoRegisterClass($class)
     {
         $parentClass = $class;
@@ -192,40 +229,4 @@ class Container
         return $class->newInstanceArgs($actualParameters);
     }
 
-
-    /**
-     * @param callable $callback
-     * @param string $id
-     */
-    private static function registerCallable(callable $callback, $id)
-    {
-        if (empty($id) || !is_string($id)) {
-            throw new \InvalidArgumentException("invalid id");
-        }
-
-        self::$definitions[$id] = $callback;
-    }
-
-    /**
-     * @param string $class
-     * @param string|null $id
-     */
-    private static function registerClass($class, $id = null)
-    {
-        if (!empty($id)) {
-            if (!is_string($id)) {
-                throw new \InvalidArgumentException("invalid id");
-            }
-
-            if (class_exists($id) && $id != $class && !is_subclass_of($class, $id)) {
-                throw new \InvalidArgumentException("$class is not a subclass of $id");
-            }
-        }
-
-        self::autoRegisterClass($class);
-
-        if (!empty($id)) {
-            self::$definitions[$id] = $class;
-        }
-    }
 }

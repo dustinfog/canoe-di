@@ -1,5 +1,5 @@
 {
-    "name": "MyDI",
+    "name": "dustinfog/MyDI",
     "description": "A Simple Ioc Framework",
     "type": "library",
     "homepage": "https://github.com/dustinfog/MyDI",
