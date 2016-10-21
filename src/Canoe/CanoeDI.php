@@ -213,6 +213,10 @@ class CanoeDI
         $actualParameters = [];
 
         foreach ($formalParameters as $parameter) {
+            if ($parameter->isOptional()) {
+                break;
+            }
+
             $parameterName = $parameter->getName();
             $actualParameter = self::get($parameterName);
             if ($actualParameter == null && !empty($parameterClass = $parameter->getClass())) {
