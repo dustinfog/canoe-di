@@ -20,13 +20,13 @@ trait CanoeDITrait
      */
     public function __get($name)
     {
-        $properties = PropertyParser::parse(self::class);
+        $properties = Property::parse(self::class);
         if (!isset($properties[$name])) {
             return null;
         }
 
         $instance = CanoeDI::get($name);
-        $type = $properties[$name]->type;
+        $type = $properties[$name]->getType();
         if (!($instance instanceof $type)) {
             $instance = CanoeDI::get($type);
         }
