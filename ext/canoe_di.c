@@ -12,7 +12,7 @@
  | obtain it through the world-wide-web, please send a note to          |
  | license@php.net so we can mail you a copy immediately.               |
  +----------------------------------------------------------------------+
- | Author: 东程稀就 <xodger@163.com>                                       |
+ | Author: 潘占东 <xodger@163.com>                                       |
  +----------------------------------------------------------------------+
  */
 
@@ -83,10 +83,7 @@ void integrate_class_name(const char *namespace, int namespace_length, char *typ
 zval *parse_property(const char *class_name, int class_name_len, zval *subpats, char **name, int *nameLen) {
 	HashTable *ht = Z_ARRVAL_P(subpats);
 	zval **match, **ppzval, *obj;
-	char *type;
-	int type_len;
-	int full_name_length;
-	char *full_name;
+
 
 	MAKE_STD_ZVAL(obj);
 	object_init_ex(obj, doc_property_ptr);
@@ -100,16 +97,14 @@ zval *parse_property(const char *class_name, int class_name_len, zval *subpats, 
 		if (namespaceLength == -1) {
 			zend_update_property(doc_property_ptr, obj, "type", strlen("type"), *match);
 		} else {
-			type = Z_STRVAL_PP(match);
-			type_len =Z_STRLEN_PP(match);
-			full_name_length = namespaceLength + type_len;
-			full_name = emalloc(full_name_length + 1);
+			char *type = Z_STRVAL_PP(match);
+			int type_len =Z_STRLEN_PP(match);
+			int full_name_length = namespaceLength + type_len;
+			char full_name[full_name_length + 1];
 
 			integrate_class_name(class_name, namespaceLength, type, type_len, full_name, &full_name_length);
 
 			zend_update_property_stringl(doc_property_ptr, obj, "type", strlen("type"), full_name, full_name_length TSRMLS_DC);
-
-			efree(full_name);
 		}
 	}
 
