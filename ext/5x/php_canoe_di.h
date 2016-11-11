@@ -24,7 +24,7 @@
 extern zend_module_entry canoe_di_module_entry;
 #define phpext_canoe_di_ptr &canoe_di_module_entry
 
-#define PHP_CANOE_DI_VERSION "0.1.0" /* Replace with version number for your extension */
+#define PHP_CANOE_DI_VERSION "0.0.2" /* Replace with version number for your extension */
 
 #ifdef PHP_WIN32
 #	define PHP_CANOE_DI_API __declspec(dllexport)
