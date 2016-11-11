@@ -13,7 +13,7 @@
 
 ```bash
 $ git clone https://github.com/dustinfog/canoe-di.git
-$ cd canoe-di/ext/5.x
+$ cd canoe-di/ext
 $ phpize
 $ ./configure
 $ make
