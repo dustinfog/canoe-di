@@ -6,13 +6,15 @@
  * Time: 6:51 PM
  */
 
-namespace Canoe;
+namespace Canoe\DI;
+
+use Canoe\Utils\DocProperty;
 
 /**
- * Class IocSupporter
+ * Class DITrait
  * @package Canoe
  */
-trait CanoeDITrait
+trait DITrait
 {
     /**
      * @param string $name
@@ -20,15 +22,15 @@ trait CanoeDITrait
      */
     public function __get($name)
     {
-        $properties = Property::parse(self::class);
+        $properties = DocProperty::parse(self::class);
         if (!isset($properties[$name])) {
             return null;
         }
 
-        $instance = CanoeDI::get($name);
+        $instance = Context::get($name);
         $type = $properties[$name]->getType();
         if (!($instance instanceof $type)) {
-            $instance = CanoeDI::get($type);
+            $instance = Context::get($type);
         }
 
         return $instance;

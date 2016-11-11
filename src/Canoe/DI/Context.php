@@ -6,13 +6,13 @@
  * Time: 11:51 AM
  */
 
-namespace Canoe;
+namespace Canoe\DI;
 
 /**
- * Class Container
+ * Class Context
  * @package Canoe
  */
-class CanoeDI
+class Context
 {
     private static $definitions = array();
     private static $beans = array();

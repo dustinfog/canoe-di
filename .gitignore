@@ -1,5 +1,6 @@
 vendor/
 .idea/
+.idea
 bin/
 tests/
 composer.lock

@@ -6,13 +6,13 @@
  * Date: 9/10/16
  * Time: 6:46 PM
  */
-namespace Canoe;
+namespace Canoe\Utils;
 
 /**
- * Class Property
+ * Class DocProperty
  * @package Canoe
  */
-class Property
+class DocProperty
 {
     private $access;
     private $type;
@@ -50,34 +50,42 @@ class Property
 
     /**
      * @param string $className
-     * @return Property[]
+     * @return DocProperty[]
      */
     public static function parse($className)
     {
-        if (empty($className)) {
+        if (!class_exists($className)) {
             return null;
         }
+
+        return self::parseClass(new \ReflectionClass($className));
+    }
+
+    private static function parseClass(\ReflectionClass $class)
+    {
+        $className = $class->getName();
 
         if (isset(self::$classPropertiesMap[$className])) {
             return self::$classPropertiesMap[$className];
         }
 
-        if (!class_exists($className)) {
-            return null;
+        $parent = $class->getParentClass();
+        if ($parent) {
+            $properties = self::parseClass($parent);
+        } else {
+            $properties = array();
         }
 
-        $class = new \ReflectionClass($className);
         $comments = $class->getDocComment();
         $lines = explode(PHP_EOL, $comments);
 
-        $properties = array();
         foreach ($lines as $line) {
             if (preg_match(
                 '/\*\s*@property-?([^\s]*)\s+([^\s]*)\s*\$([^\s]*)/',
                 $line,
                 $matches
             )) {
-                $property = new Property();
+                $property = new DocProperty();
                 $property->access = $matches[1];
                 $property->type = self::tryIntegrateClassName($className, $matches[2]);
                 $property->name = $matches[3];

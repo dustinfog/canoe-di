@@ -8,7 +8,30 @@
 5. 接口注入: 在容器中注册过的类,可以自动用于接口类型或其父类型属性的注入
 
 ##安装
+
+编译安装，可以得到最大的效率：
+
+```bash
+$ git clone https://github.com/dustinfog/canoe-di.git
+$ cd canoe-di/ext/5.x
+$ phpize
+$ ./configure
+$ make
+$ sudo make install
+```
+而后编辑php.ini
+
+```ini
+[canoe-di]
+extension=canoe_di.so
+
+```
+
+composer安装：
+
+```bash
 composer require dustinfog/canoe-di
+```
 
 ##使用
 ###获取实例
@@ -17,7 +40,7 @@ class ClassA
 {
 }
 //DI容器在处理类型时,会在第一次遇到的时候实例化,并且在以后使用中以单例的方式使用
-$a = \Canoe\CanoeDI::get(ClassA::class);
+$a = \Canoe\DI\Context::get(ClassA::class);
 ```
 ###构造函数自动装配
 ```php
@@ -36,9 +59,10 @@ class ClassA
     }
 }
 
-$a = \Canoe\CanoeDI::get(ClassA::class);
+$a = \Canoe\DI\::get(ClassA::class);
 ```
 ###基于标注的装配
+
 ```php
 class ClassC
 {
@@ -51,7 +75,7 @@ class ClassC
 class ClassA
 {
     //需要引入一个trait,用以处理$c的获取
-    use \Canoe\CanoeDITrait;
+    use \Canoe\DI\DITrait;
     
     public function test() {
         //这里可以直接使用
@@ -60,20 +84,20 @@ class ClassA
 }
 ```
 ###预先定义
-上面的例子都是在运行时来实现自动装配的,但在某些时候可能需要手动预先创建一些定义,以备后续使,框架提供了简单的支持.
-```php
+上面的例子都是在运行时来实现自动装配的,但在某些时候可能需要手动预先创建一些定
+义,以备后续使,框架提供了简单的支持.
 
-Canoe\CanoeDI::registerDefinition(ClassA::class);
-Canoe\CanoeDI::registerDefinition(function() {
+```php
+Canoe\DI\Context::registerDefinition(ClassA::class);
+Canoe\DI\Context::registerDefinition(function() {
     return new ClassB();
 }, 'b');
-
 ```
 ###配置
 大多数时候,预先定义都是写在配置文件里,可以用下列的方法加载配置:
 
 ```php
-\Canoe\CanoeDI::loadConfig(
+\Canoe\DI\Context::loadConfig(
 [
     'definitions' => [ //这里是定义
         ClassB::class,
@@ -85,6 +109,7 @@ Canoe\CanoeDI::registerDefinition(function() {
 ```
 ###接口注入
 接口的注入需要预先注册所需接口的类:
+
 ```php
 interface InterfaceB
 {
@@ -104,9 +129,9 @@ class ClassA
 }
 
 //因为预先注册了ClassB,那么所有ClassB的父类和实现的接口都有可能成为ClassA构造函数的候选
-Canoe\CanoeDI::registerDefinition(ClassB::class);
+Canoe\DI\Context::registerDefinition(ClassB::class);
 
-$a = \Canoe\CanoeDI::get(ClassA::class);
+$a = Canoe\DI\Context::get(ClassA::class);
 ```
 ###自动装配的发现规则
 
