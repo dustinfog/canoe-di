@@ -2,6 +2,7 @@
     "name": "dustinfog/canoe-di",
     "description": "A Simple Ioc Framework",
     "type": "library",
+    "version": "0.0.2"
     "homepage": "https://github.com/dustinfog/canoe-di",
     "time": "2016-09-10",
     "license": "proprietary",
