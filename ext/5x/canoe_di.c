@@ -12,7 +12,7 @@
  | obtain it through the world-wide-web, please send a note to          |
  | license@php.net so we can mail you a copy immediately.               |
  +----------------------------------------------------------------------+
- | Author: 潘占东 <xodger@163.com>                                       |
+ | Author: 东程稀就 <xodger@163.com>                                       |
  +----------------------------------------------------------------------+
  */
 

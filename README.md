@@ -59,7 +59,7 @@ class ClassA
     }
 }
 
-$a = \Canoe\DI\::get(ClassA::class);
+$a = \Canoe\DI\Context::get(ClassA::class);
 ```
 ###基于标注的装配
 
