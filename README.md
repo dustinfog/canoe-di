@@ -27,7 +27,7 @@ extension=canoe_di.so
 
 ```
 
-composer安装：
+composer安装 (生产环境如果已经编译安装了扩展，此步骤可省略。在开发环境，PHP源码可以让IDE提供代码完成提示，所以仍然推荐执行这一步)：
 
 ```bash
 composer require dustinfog/canoe-di
