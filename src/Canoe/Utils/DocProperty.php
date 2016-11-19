@@ -16,6 +16,7 @@ class DocProperty
 {
     const ACC_WRITE = 'write';
     const ACC_READ = 'read';
+    const ACC_ALL = '';
 
     private $access;
     private $type;
@@ -177,7 +178,7 @@ class DocProperty
 
     private static function parseUses($desc)
     {
-        if (preg_match("/\\{@uses\\s+([^\\s\\}]+)/", $desc, $matches)) {
+        if (preg_match("/\\{\\s*@uses\\s+([^\\s\\}]+)/", $desc, $matches)) {
             return $matches[1];
         }
 
@@ -189,27 +190,27 @@ class DocProperty
         $tokenPos = strpos($name, '[');
         if ($tokenPos === false) {
             return [$name, 0];
-        } else {
-            $dimension = 0;
-            $valid = false;
-            for ($i = $tokenPos + 1; $i < strlen($name); $i ++) {
-                if ($name[$i] == ']' && !$valid) {
-                    $valid = true;
-                    $dimension ++;
-                } elseif ($name[$i] == '[' && $valid) {
-                    $valid = false;
-                } else {
-                    $valid = false;
-                    break;
-                }
-            }
-
-            if (!$valid) {
-                throw new \Exception("invalid type identifier $name");
-            }
-
-            return [substr($name, 0, $tokenPos), $dimension];
         }
+
+        $dimension = 0;
+        $valid = false;
+        for ($i = $tokenPos + 1; $i < strlen($name); $i ++) {
+            if ($name[$i] == ']' && !$valid) {
+                $valid = true;
+                $dimension ++;
+            } elseif ($name[$i] == '[' && $valid) {
+                $valid = false;
+            } else {
+                $valid = false;
+                break;
+            }
+        }
+
+        if (!$valid) {
+            throw new \Exception("invalid type identifier $name");
+        }
+
+        return [substr($name, 0, $tokenPos), $dimension];
     }
 
     private static function tryIntegrateClassName($ownerClassName, $type)

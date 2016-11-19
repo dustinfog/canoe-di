@@ -16,7 +16,13 @@ use Canoe\Utils\DocProperty;
  */
 trait DITrait
 {
-    private $wiredProperties = array();
+    /**
+     * @return static
+     */
+    public static function getInstance()
+    {
+        return Context::get(static::class);
+    }
 
     /**
      * @param string $name
@@ -26,22 +32,18 @@ trait DITrait
     public function __set($name, $value)
     {
         $property = DocProperty::get(self::class, $name);
-        if ($property == null) {
-            $this->$name = $value;
+        if ($property != null) {
+            if ($property->getAccess() == DocProperty::ACC_READ) {
+                throw new \Exception("cannot write read only property ".__CLASS__."::$name");
+            }
 
-            return;
+            if (!$property->isValueAcceptable($value)) {
+                $typeSpec = $property->getTypeSpec();
+                throw new \Exception("assign ".__CLASS__."::$name error: $typeSpec required");
+            }
         }
 
-        if ($property->getAccess() == DocProperty::ACC_READ) {
-            throw new \Exception("cannot write read only property ".__CLASS__."::$name");
-        }
-
-        if (!$property->isValueAcceptable($value)) {
-            $typeSpec = $property->getTypeSpec();
-            throw new \Exception("assign ".__CLASS__."::$name error: $typeSpec required");
-        }
-
-        $this->wiredProperties[$name] = $value;
+        $this->$name = $value;
     }
 
     /**
@@ -51,13 +53,9 @@ trait DITrait
      */
     public function __get($name)
     {
-        if (isset($this->wiredProperties[$name])) {
-            return $this->wiredProperties[$name];
-        }
-
         $property = DocProperty::get(self::class, $name);
         $value = $this->wire($property);
-        $this->wiredProperties[$name] = $value;
+        $this->$name = $value;
 
         return $value;
     }
