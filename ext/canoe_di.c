@@ -49,6 +49,7 @@ HashTable beans;
 PHPAPI zend_class_entry *doc_property_ptr;
 PHPAPI zend_class_entry *context_ptr;
 PHPAPI zend_class_entry *di_trait_ptr;
+PHPAPI zend_class_entry *singleton_trait_ptr;
 
 int is_full_name(char *class_name) {
     return class_name[0] == '\\';
@@ -799,7 +800,7 @@ zval *wire_property(zval *property, zend_class_entry *self)
 	return NULL;
 }
 
-PHP_METHOD(di_trait, getInstance)
+PHP_METHOD(singleton_trait, getInstance)
 {
 	zend_class_entry *self = EG(called_scope);
 	zval *bean = get_bean((char *)self->name, self->name_length);
@@ -810,6 +811,11 @@ PHP_METHOD(di_trait, getInstance)
 		RETURN_NULL();
 	}
 }
+
+static zend_function_entry singleton_trait_methods[] = {
+		ZEND_ME(singleton_trait, getInstance, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+		{NULL, NULL, NULL}
+};
 
 PHP_METHOD(di_trait, __set) {
 	char *name;
@@ -887,7 +893,6 @@ ZEND_END_ARG_INFO()
 static zend_function_entry di_trait_methods[] = {
 		ZEND_ME(di_trait, __set, __set_arg_info, ZEND_ACC_PUBLIC)
 		ZEND_ME(di_trait, __get, __get_arg_info, ZEND_ACC_PUBLIC)
-		ZEND_ME(di_trait, getInstance, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 		{NULL, NULL, NULL}
 };
 
@@ -913,6 +918,10 @@ PHP_MINIT_FUNCTION(canoe_di) {
     INIT_CLASS_ENTRY(canoe_entry, "Canoe\\DI\\DITrait", di_trait_methods);
     di_trait_ptr = zend_register_internal_class(&canoe_entry TSRMLS_CC);
     di_trait_ptr->ce_flags = ZEND_ACC_TRAIT;
+
+    INIT_CLASS_ENTRY(canoe_entry, "Canoe\\DI\\SingletonTrait", singleton_trait_methods);
+    singleton_trait_ptr = zend_register_internal_class(&canoe_entry TSRMLS_CC);
+    singleton_trait_ptr->ce_flags = ZEND_ACC_TRAIT;
 
     return SUCCESS;
 }

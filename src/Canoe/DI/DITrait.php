@@ -17,14 +17,6 @@ use Canoe\Utils\DocProperty;
 trait DITrait
 {
     /**
-     * @return static
-     */
-    public static function getInstance()
-    {
-        return Context::get(static::class);
-    }
-
-    /**
      * @param string $name
      * @param mixed  $value
      * @throws \Exception
