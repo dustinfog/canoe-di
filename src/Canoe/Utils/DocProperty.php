@@ -14,9 +14,15 @@ namespace Canoe\Utils;
  */
 class DocProperty
 {
+    const ACC_WRITE = 'write';
+    const ACC_READ = 'read';
+
     private $access;
     private $type;
     private $name;
+    private $arrayDimension = 0;
+    private $uses;
+    private $typeSpec;
 
     private static $classPropertiesMap = array();
 
@@ -25,6 +31,7 @@ class DocProperty
     }
 
     /**
+     *
      * @return string
      */
     public function getName()
@@ -49,6 +56,55 @@ class DocProperty
     }
 
     /**
+     * @return int
+     */
+    public function getArrayDimension()
+    {
+        return $this->arrayDimension;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUses()
+    {
+        return $this->uses;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTypeSpec()
+    {
+        return $this->typeSpec;
+    }
+
+    /**
+     * @param mixed $value
+     * @return boolean
+     */
+    public function isValueAcceptable($value)
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        if (empty($this->type)) {
+            return true;
+        }
+
+        if ($this->arrayDimension > 0) {
+            return is_array($value);
+        }
+
+        if (class_exists($this->type) || interface_exists($this->type)) {
+            return $value instanceof $this->type;
+        }
+
+        return gettype($value) == $this->type;
+    }
+
+    /**
      * @param string $className
      * @return DocProperty[]
      */
@@ -59,6 +115,21 @@ class DocProperty
         }
 
         return self::parseClass(new \ReflectionClass($className));
+    }
+
+    /**
+     * @param string $className
+     * @param string $name
+     * @return DocProperty|null
+     */
+    public static function get($className, $name)
+    {
+        $properties = self::parse($className);
+        if ($properties == null || !isset($properties[$name])) {
+            return null;
+        }
+
+        return $properties[$name];
     }
 
     private static function parseClass(\ReflectionClass $class)
@@ -81,14 +152,20 @@ class DocProperty
 
         foreach ($lines as $line) {
             if (preg_match(
-                '/\*\s*@property-?([^\s]*)\s+([^\s]*)\s*\$([^\s]*)/',
+                '/\*\s*@property-?([^\s]*)\s+([^\s]*)\s*\$([^\s]*)\s*(.*)/',
                 $line,
                 $matches
             )) {
+                $arrayInfo = self::parseArray($matches[2]);
+
                 $property = new DocProperty();
                 $property->access = $matches[1];
-                $property->type = self::tryIntegrateClassName($className, $matches[2]);
+                $property->typeSpec = $matches[2];
+                $property->type = self::tryIntegrateClassName($className, $arrayInfo[0]);
+                $property->arrayDimension = $arrayInfo[1];
                 $property->name = $matches[3];
+                $property->uses = self::parseUses($matches[4]);
+
                 $properties[$property->name] = $property;
             }
         }
@@ -96,6 +173,43 @@ class DocProperty
         self::$classPropertiesMap[$className] = $properties;
 
         return $properties;
+    }
+
+    private static function parseUses($desc)
+    {
+        if (preg_match("/\\{@uses\\s+([^\\s\\}]+)/", $desc, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    private static function parseArray($name)
+    {
+        $tokenPos = strpos($name, '[');
+        if ($tokenPos === false) {
+            return [$name, 0];
+        } else {
+            $dimension = 0;
+            $valid = false;
+            for ($i = $tokenPos + 1; $i < strlen($name); $i ++) {
+                if ($name[$i] == ']' && !$valid) {
+                    $valid = true;
+                    $dimension ++;
+                } elseif ($name[$i] == '[' && $valid) {
+                    $valid = false;
+                } else {
+                    $valid = false;
+                    break;
+                }
+            }
+
+            if (!$valid) {
+                throw new \Exception("invalid type identifier $name");
+            }
+
+            return [substr($name, 0, $tokenPos), $dimension];
+        }
     }
 
     private static function tryIntegrateClassName($ownerClassName, $type)

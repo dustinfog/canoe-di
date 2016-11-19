@@ -16,23 +16,83 @@ use Canoe\Utils\DocProperty;
  */
 trait DITrait
 {
+    private $wiredProperties = array();
+
+    /**
+     * @param string $name
+     * @param mixed  $value
+     * @throws \Exception
+     */
+    public function __set($name, $value)
+    {
+        $property = DocProperty::get(self::class, $name);
+        if ($property == null) {
+            $this->$name = $value;
+
+            return;
+        }
+
+        if ($property->getAccess() == DocProperty::ACC_READ) {
+            throw new \Exception("cannot write read only property ".__CLASS__."::$name");
+        }
+
+        if (!$property->isValueAcceptable($value)) {
+            $typeSpec = $property->getTypeSpec();
+            throw new \Exception("assign ".__CLASS__."::$name error: $typeSpec required");
+        }
+
+        $this->wiredProperties[$name] = $value;
+    }
+
     /**
      * @param string $name
      * @return mixed|null
+     * @throws \Exception
      */
     public function __get($name)
     {
-        $properties = DocProperty::parse(self::class);
-        if (!isset($properties[$name])) {
+        if (isset($this->wiredProperties[$name])) {
+            return $this->wiredProperties[$name];
+        }
+
+        $property = DocProperty::get(self::class, $name);
+        $value = $this->wire($property);
+        $this->wiredProperties[$name] = $value;
+
+        return $value;
+    }
+
+    private function wire(DocProperty $property)
+    {
+        if (empty($property)) {
             return null;
         }
 
-        $instance = Context::get($name);
-        $type = $properties[$name]->getType();
-        if (!($instance instanceof $type)) {
-            $instance = Context::get($type);
+        $name = $property->getName();
+        if ($property->getAccess() == DocProperty::ACC_WRITE) {
+            throw new \Exception("cannot read write only property $name");
         }
 
-        return $instance;
+        $uses = $property->getUses();
+
+        if ($uses) {
+            $value = Context::get($uses);
+            if ($value == null) {
+                throw new \Exception("cannot find a bean with name $uses for $name");
+            }
+
+            if (!$property->isValueAcceptable($value)) {
+                throw new \Exception("value is not a acceptable value for property $name");
+            }
+
+            return $value;
+        }
+
+        $type = $property->getType();
+        if ($property->getArrayDimension() == 0 && class_exists($type)) {
+            return Context::get($type);
+        }
+
+        throw new \Exception("cannot wire $name");
     }
 }
