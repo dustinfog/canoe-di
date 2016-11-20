@@ -16,7 +16,7 @@ trait SingletonTrait
      */
     public static function getInstance($id = null)
     {
-        if ($id == null) {
+        if (empty($id)) {
             return Context::get(static::class);
         }
 
