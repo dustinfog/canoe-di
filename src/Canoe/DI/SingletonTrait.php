@@ -11,10 +11,21 @@ namespace Canoe\DI;
 trait SingletonTrait
 {
     /**
+     * @param string $id
      * @return static
      */
-    public static function getInstance()
+    public static function getInstance($id = null)
     {
-        return Context::get(static::class);
+        if ($id == null) {
+            return Context::get(static::class);
+        }
+
+        $value = Context::get($id);
+        if (!($value instanceof static)) {
+            $class = static::class;
+            throw new \InvalidArgumentException("not a $class instance");
+        }
+
+        return $value;
     }
 }

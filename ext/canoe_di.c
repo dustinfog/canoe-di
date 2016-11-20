@@ -802,8 +802,35 @@ zval *wire_property(zval *property, zend_class_entry *self)
 
 PHP_METHOD(singleton_trait, getInstance)
 {
+	char *id = NULL;
+	int id_len = 0;
+	zend_class_entry *actual_ce;
 	zend_class_entry *self = EG(called_scope);
-	zval *bean = get_bean((char *)self->name, self->name_length);
+	zval *bean;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|s", &id, &id_len) == FAILURE) {
+		zend_throw_exception(spl_ce_InvalidArgumentException, "Invalid arguments" TSRMLS_CC,
+				0);
+		return;
+	}
+
+	if (id != NULL && id_len != 0) {
+		bean = get_bean(id, id_len);
+
+		if (bean == NULL) {
+			zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0  TSRMLS_CC,
+					"cannot find bean %s", id);
+		} else if(Z_TYPE_P(bean) != IS_OBJECT
+				|| !HAS_CLASS_ENTRY(*bean)
+				|| !(actual_ce = Z_OBJCE_P(bean))
+				|| !instanceof_function(actual_ce, self)) {
+			bean = NULL;
+			zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0  TSRMLS_CC,
+					"bean %s is not a %s", id, self->name);
+		}
+	} else {
+		bean = get_bean((char *)self->name, self->name_length);
+	}
 
 	if (bean != NULL) {
 		RETURN_ZVAL(bean, 1, 0);
@@ -823,7 +850,7 @@ PHP_METHOD(di_trait, __set) {
 	zval *value, *properties, **property, *this;
 	zend_class_entry *self;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "sz", &name, &name_len, &value) == FAILURE) {
+if (zend_parse_parameters(ZEND_NUM_ARGS(), "sz", &name, &name_len, &value) == FAILURE) {
 		zend_throw_exception(spl_ce_InvalidArgumentException, "Invalid arguments" TSRMLS_CC,
 				0);
 		return;
