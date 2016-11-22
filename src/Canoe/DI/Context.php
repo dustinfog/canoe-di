@@ -137,14 +137,10 @@ class Context
         $class = new \ReflectionClass($className);
         $constructor = $class->getConstructor();
 
-        if ($constructor == null) {
+        if ($constructor == null || $constructor->getNumberOfParameters() == 0) {
             return $class->newInstance();
         }
 
-        if ($constructor->getNumberOfParameters() != 0) {
-            throw new \InvalidArgumentException("number of parameters is not 0, create $className instance failed. try to set a bean or register a callback definition");
-        }
-
-        return $class->newInstanceArgs();
+        throw new \InvalidArgumentException("number of parameters is not 0, create $className instance failed. try to set a bean or register a callback definition");
     }
 }
