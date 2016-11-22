@@ -23,7 +23,7 @@ trait DITrait
      */
     public function __set($name, $value)
     {
-        $property = DocProperty::get(self::class, $name);
+        $property = DocProperty::get(static::class, $name);
         if ($property != null) {
             if ($property->getAccess() == DocProperty::ACC_READ) {
                 throw new \Exception("cannot write read only property ".__CLASS__."::$name");
@@ -45,7 +45,7 @@ trait DITrait
      */
     public function __get($name)
     {
-        $property = DocProperty::get(self::class, $name);
+        $property = DocProperty::get(static::class, $name);
         if (!empty($property)) {
             $value = $this->wire($property);
             $this->$name = $value;
