@@ -46,10 +46,14 @@ trait DITrait
     public function __get($name)
     {
         $property = DocProperty::get(self::class, $name);
-        $value = $this->wire($property);
-        $this->$name = $value;
+        if (!empty($property)) {
+            $value = $this->wire($property);
+            $this->$name = $value;
 
-        return $value;
+            return $value;
+        }
+
+        return null;
     }
 
     private function wire(DocProperty $property)
